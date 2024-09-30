@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QPushButton, QGraphicsView, QVBoxLayout, QWidget, QToolBar
+from PySide6.QtWidgets import QMainWindow, QPushButton, QGraphicsView, QVBoxLayout, QWidget, QToolBar, QStatusBar
 from PySide6.QtCore import Qt
 from visualization.workspace import Workspace
 
@@ -27,11 +27,22 @@ class MainWindow(QMainWindow):
         self.workspace = Workspace()
         self.setCentralWidget(self.workspace)
 
+        # Initialize status bar
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+        self.status_bar.showMessage("Select a mode to begin.")
+
         # Connect signals
-        self.body_button.clicked.connect(self.workspace.create_body_mode)
-        self.joint_button.clicked.connect(self.workspace.create_joint_mode)
-        self.load_button.clicked.connect(self.workspace.create_load_mode)
+        self.body_button.clicked.connect(lambda: self.workspace.set_mode('body'))
+        self.joint_button.clicked.connect(lambda: self.workspace.set_mode('joint'))
+        self.load_button.clicked.connect(lambda: self.workspace.set_mode('load'))
         self.run_button.clicked.connect(self.run_simulation)
+
+        # Connect Workspace signals to status bar
+        self.workspace.status_message.connect(self.update_status_bar)
+
+    def update_status_bar(self, message):
+        self.status_bar.showMessage(message)
 
     def run_simulation(self):
         # Open simulation settings dialog
@@ -41,5 +52,5 @@ class MainWindow(QMainWindow):
             settings = dialog.get_settings()
             # Pass settings to simulation module
             from dynamics.simulation import Simulation
-            simulation = Simulation(settings)
+            simulation = Simulation(settings, self.workspace.bodies, self.workspace.joints, self.workspace.loads)
             simulation.run()
