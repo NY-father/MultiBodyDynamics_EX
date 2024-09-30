@@ -1,0 +1,8 @@
+PySide6
+PyDy
+SymPy
+SciPy
+NumPy
+Matplotlib
+PyQtGraph
+NetworkX
